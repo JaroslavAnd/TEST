@@ -1,0 +1,103 @@
+/* CSS Module для навігації */
+.sidebar {
+  width: 260px;
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  min-height: calc(100vh - 64px);
+  padding: 1.5rem 0;
+  flex-shrink: 0;
+}
+
+.navList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0 0.75rem;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.navItem:hover {
+  background-color: #f1f5f9;
+  color: var(--color-primary);
+}
+
+.navItemActive {
+  background-color: #eff6ff;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.sectionTitle {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  padding: 0.75rem 1.75rem 0.375rem;
+  margin-top: 0.5rem;
+}
+
+/* Мобільна навігація */
+.mobileNav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  padding: 0.5rem;
+  z-index: 50;
+}
+
+.mobileNavList {
+  list-style: none;
+  display: flex;
+  justify-content: space-around;
+  gap: 0.25rem;
+}
+
+.mobileNavItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.375rem 0.5rem;
+  border-radius: var(--radius-md);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  transition: color 0.15s ease;
+}
+
+.mobileNavItem:hover {
+  color: var(--color-primary);
+}
+
+.mobileNavItemActive {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+@media (max-width: 767px) {
+  .sidebar {
+    display: none;
+  }
+
+  .mobileNav {
+    display: block;
+  }
+}
