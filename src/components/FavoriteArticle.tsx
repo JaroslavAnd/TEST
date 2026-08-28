@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { Article } from "@/types";
 
-// Серверний компонент — отримує одну статтю за ID
+// Серверний компонент — отримує одну статтю за ID з нашого API
 async function fetchArticle(id: number): Promise<Article> {
-  const res = await fetch(
-    `https://jsonplaceholder.typicode.com/posts/${id}`,
-    { cache: "no-store" }
-  );
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const res = await fetch(`${baseUrl}/api/articles/${id}`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Не вдалося завантажити статтю");
   return res.json();
 }
@@ -23,14 +23,14 @@ export default async function FavoriteArticle({ id }: { id: number }) {
           ★ Обране
         </span>
         <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-          ID: {article.id}
+          {article.category}
         </span>
       </div>
-      <h3 className="text-base font-semibold text-secondary mb-2 capitalize">
+      <h3 className="text-base font-semibold text-secondary mb-2">
         {article.title}
       </h3>
       <p className="text-sm text-text-muted mb-4 line-clamp-4">
-        {article.body}
+        {article.excerpt}
       </p>
       <Link
         href={`/articles/${article.id}`}

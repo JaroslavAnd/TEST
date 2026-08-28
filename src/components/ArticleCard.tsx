@@ -12,14 +12,17 @@ export default function ArticleCard({ article }: ArticleCardProps) {
     >
       <div className="flex items-center gap-2 mb-3">
         <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+          {article.category}
+        </span>
+        <span className="text-xs text-text-muted">
           ID: {article.id}
         </span>
       </div>
-      <h3 className="text-base font-semibold text-secondary mb-2 line-clamp-2 capitalize">
+      <h3 className="text-base font-semibold text-secondary mb-2 line-clamp-2">
         {article.title}
       </h3>
       <p className="text-sm text-text-muted mb-4 line-clamp-3">
-        {article.body}
+        {article.excerpt}
       </p>
       <Link
         href={`/articles/${article.id}`}
