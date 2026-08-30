@@ -1,11 +1,17 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 
-// GET /api/articles — список усіх статей
+// GET /api/articles — список усіх статей (публічний)
 export async function GET() {
   try {
     const articles = await prisma.article.findMany({
       orderBy: { createdAt: "desc" },
+      include: {
+        author: {
+          select: { id: true, name: true, image: true },
+        },
+      },
     });
     return Response.json(articles);
   } catch {
@@ -16,8 +22,14 @@ export async function GET() {
   }
 }
 
-// POST /api/articles — створення нової статті
+// POST /api/articles — створення нової статті (тільки авторизований)
 export async function POST(request: NextRequest) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return Response.json({ error: "Не авторизовано" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { title, content, excerpt, category } = body;
@@ -36,6 +48,12 @@ export async function POST(request: NextRequest) {
         content: String(content),
         excerpt: excerpt ? String(excerpt) : String(content).slice(0, 200),
         category: String(category),
+        authorId: session.user.id,
+      },
+      include: {
+        author: {
+          select: { id: true, name: true, image: true },
+        },
       },
     });
 

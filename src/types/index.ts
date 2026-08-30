@@ -1,5 +1,12 @@
 // Типи для StudyHub
 
+// Автор статті
+export interface ArticleAuthor {
+  id: string;
+  name: string | null;
+  image: string | null;
+}
+
 // Тип статті з бази даних
 export interface Article {
   id: number;
@@ -7,7 +14,8 @@ export interface Article {
   content: string;
   excerpt: string;
   category: string;
-  authorId?: number | null;
+  authorId?: string | null;
+  author?: ArticleAuthor | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -26,13 +34,4 @@ export interface UpdateArticleData {
   content?: string;
   excerpt?: string;
   category?: string;
-}
-
-// Тип коментаря (залишаємо для сумісності з ЛР1 — JSONPlaceholder)
-export interface Comment {
-  postId: number;
-  id: number;
-  name: string;
-  email: string;
-  body: string;
 }

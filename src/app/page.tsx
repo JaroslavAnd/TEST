@@ -94,7 +94,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="border-t border-border py-6 text-center text-sm text-text-muted">
-        © 2026 StudyHub. Лабораторна робота №2.
+        © 2026 StudyHub. Лабораторна робота №3.
       </footer>
     </div>
   );

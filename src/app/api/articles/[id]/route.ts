@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 
-// GET /api/articles/[id] — отримати статтю за ID
+// GET /api/articles/[id] — отримати статтю за ID (публічний)
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -16,6 +17,11 @@ export async function GET(
 
     const article = await prisma.article.findUnique({
       where: { id: articleId },
+      include: {
+        author: {
+          select: { id: true, name: true, image: true },
+        },
+      },
     });
 
     if (!article) {
@@ -31,11 +37,17 @@ export async function GET(
   }
 }
 
-// PATCH /api/articles/[id] — оновити статтю
+// PATCH /api/articles/[id] — оновити статтю (тільки автор)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return Response.json({ error: "Не авторизовано" }, { status: 401 });
+  }
+
   try {
     const { id } = await params;
     const articleId = parseInt(id);
@@ -50,6 +62,14 @@ export async function PATCH(
 
     if (!existing) {
       return Response.json({ error: "Статтю не знайдено" }, { status: 404 });
+    }
+
+    // Перевірка власності: тільки автор може редагувати
+    if (existing.authorId && existing.authorId !== session.user.id) {
+      return Response.json(
+        { error: "Ви не маєте права редагувати цю статтю" },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();
@@ -63,6 +83,11 @@ export async function PATCH(
         ...(excerpt !== undefined && { excerpt: String(excerpt) }),
         ...(category !== undefined && { category: String(category) }),
       },
+      include: {
+        author: {
+          select: { id: true, name: true, image: true },
+        },
+      },
     });
 
     return Response.json(article);
@@ -74,11 +99,17 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/articles/[id] — видалити статтю
+// DELETE /api/articles/[id] — видалити статтю (тільки автор)
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return Response.json({ error: "Не авторизовано" }, { status: 401 });
+  }
+
   try {
     const { id } = await params;
     const articleId = parseInt(id);
@@ -93,6 +124,14 @@ export async function DELETE(
 
     if (!existing) {
       return Response.json({ error: "Статтю не знайдено" }, { status: 404 });
+    }
+
+    // Перевірка власності: тільки автор може видаляти
+    if (existing.authorId && existing.authorId !== session.user.id) {
+      return Response.json(
+        { error: "Ви не маєте права видаляти цю статтю" },
+        { status: 403 }
+      );
     }
 
     await prisma.article.delete({ where: { id: articleId } });

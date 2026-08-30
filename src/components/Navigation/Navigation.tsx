@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   ArticleOutlined,
   BookmarkBorderOutlined,
-  SettingsOutlined,
+  PersonOutlined,
   SecurityOutlined,
 } from "@mui/icons-material";
 import styles from "./Navigation.module.css";
@@ -24,9 +24,9 @@ const navItems = [
     section: "articles",
   },
   {
-    label: "Налаштування",
-    href: "/profile/settings",
-    icon: SettingsOutlined,
+    label: "Профіль",
+    href: "/profile",
+    icon: PersonOutlined,
     section: "profile",
   },
   {
@@ -43,6 +43,9 @@ export default function Navigation() {
   const isActive = (href: string) => {
     if (href === "/articles") {
       return pathname === "/articles";
+    }
+    if (href === "/profile") {
+      return pathname === "/profile";
     }
     return pathname.startsWith(href);
   };

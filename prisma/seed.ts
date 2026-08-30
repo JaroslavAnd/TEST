@@ -1,6 +1,14 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, "../.env.local"), override: true });
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
+
 import { PrismaClient } from "../src/generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
+import bcrypt from "bcryptjs";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
@@ -81,10 +89,33 @@ const articles = [
 async function main() {
   console.log("🌱 Seed: видаляємо старі дані...");
   await prisma.article.deleteMany();
+  await prisma.account.deleteMany();
+  await prisma.session.deleteMany();
+  await prisma.user.deleteMany();
+
+  console.log("🌱 Seed: створюємо тестового користувача...");
+  const hashedPassword = await bcrypt.hash("password123", 10);
+
+  const user = await prisma.user.create({
+    data: {
+      name: "Тестовий Студент",
+      email: "student@studyhub.com",
+      password: hashedPassword,
+      age: 20,
+      bio: "Студент КПІ, вивчаю веброзробку та TypeScript.",
+    },
+  });
+
+  console.log(`✅ Створено користувача: ${user.email} (пароль: password123)`);
 
   console.log("🌱 Seed: додаємо навчальні матеріали...");
   for (const article of articles) {
-    await prisma.article.create({ data: article });
+    await prisma.article.create({
+      data: {
+        ...article,
+        authorId: user.id,
+      },
+    });
   }
 
   const count = await prisma.article.count();

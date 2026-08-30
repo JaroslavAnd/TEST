@@ -14,9 +14,11 @@ export default function ArticleCard({ article }: ArticleCardProps) {
         <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
           {article.category}
         </span>
-        <span className="text-xs text-text-muted">
-          ID: {article.id}
-        </span>
+        {article.author?.name && (
+          <span className="text-xs text-text-muted">
+            {article.author.name}
+          </span>
+        )}
       </div>
       <h3 className="text-base font-semibold text-secondary mb-2 line-clamp-2">
         {article.title}
