@@ -1,100 +1,119 @@
 import Link from "next/link";
-import { Button } from "@mui/material";
 
 const features = [
   {
     icon: "📚",
     title: "Навчальні матеріали",
-    description:
-      "Сотні статей з різних тем для студентів та викладачів.",
+    description: "Сотні структурованих статей, лекцій та конспектів для зручного навчання.",
+    tag: "База знань",
   },
   {
-    icon: "⭐",
-    title: "Обране",
-    description:
-      "Зберігайте корисні матеріали та повертайтесь до них будь-коли.",
+    icon: "🔍",
+    title: "Розумний пошук",
+    description: "Миттєвий повнотекстовий пошук за ключовими словами та фільтри за категоріями.",
+    tag: "Фільтри",
   },
   {
-    icon: "✍️",
-    title: "Створення контенту",
-    description:
-      "Діліться власними знаннями — публікуйте свої статті.",
+    icon: "💬",
+    title: "Інтерактивні коментарі",
+    description: "Обговорюйте прочитане, ставте запитання авторам та діліться власним досвідом.",
+    tag: "Спільнота",
   },
   {
-    icon: "👤",
-    title: "Профіль",
-    description:
-      "Керуйте своїм обліковим записом та налаштуваннями безпеки.",
+    icon: "🛡️",
+    title: "Панель модерації",
+    description: "Повноцінна система ролей для контролю контенту, авторів та безпеки.",
+    tag: "RBAC Адмін",
   },
 ];
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Hero */}
-      <section className="flex-1 flex items-center justify-center bg-gradient-to-br from-secondary to-primary-dark text-white px-4 py-20 md:py-28">
-        <div className="text-center max-w-2xl">
-          <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-1.5 mb-6">
-            <span className="text-sm font-medium">🎓 Навчальна платформа</span>
+    <div className="flex-1 flex flex-col justify-between">
+      {/* Hero Section */}
+      <section className="relative px-4 pt-16 pb-20 md:pt-24 md:pb-28">
+        <div className="max-w-4xl mx-auto text-center">
+          {/* Pill Badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 mb-6 shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+            <span className="text-xs font-semibold text-blue-700 tracking-wide uppercase">
+              Освітній портал нового покоління
+            </span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-            Study<span className="text-primary-light">Hub</span>
+
+          {/* Main Heading */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-900 tracking-tight leading-[1.15] mb-6">
+            Платформа для обміну{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+              академічними знаннями
+            </span>
           </h1>
-          <p className="text-lg md:text-xl text-white/80 mb-8 leading-relaxed">
-            Зручна платформа для публікації, читання та збереження навчальних
-            матеріалів. Розширюйте свої знання разом з нами.
+
+          {/* Subtitle */}
+          <p className="text-base sm:text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed mb-10 font-normal">
+            Публікуйте конспекти, читайте фахові статті, беріть участь у дискусіях та систематизуйте свої знання разом із StudyHub.
           </p>
-          <Link href="/articles">
-            <Button
-              variant="contained"
-              size="large"
-              sx={{
-                backgroundColor: "#2563eb",
-                borderRadius: "0.75rem",
-                textTransform: "none",
-                fontSize: "1rem",
-                fontWeight: 600,
-                px: 4,
-                py: 1.5,
-                "&:hover": { backgroundColor: "#1d4ed8" },
-              }}
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
+            <Link
+              href="/articles"
+              className="w-full sm:w-auto px-7 py-3.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md hover:shadow-lg transition-all"
             >
-              Переглянути матеріали
-            </Button>
-          </Link>
+              Переглянути матеріали →
+            </Link>
+            <Link
+              href="/articles/create"
+              className="w-full sm:w-auto px-7 py-3.5 text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl shadow-xs transition-all"
+            >
+              Опублікувати статтю
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-16 px-4">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-3">
-            Можливості платформи
+      {/* Features Section */}
+      <section className="px-4 pb-20 max-w-6xl mx-auto w-full">
+        <div className="text-center mb-10">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-2">
+            Можливості StudyHub
           </h2>
-          <p className="text-text-muted text-center mb-10 max-w-xl mx-auto">
-            StudyHub допомагає ефективно навчатися та ділитися знаннями
+          <p className="text-sm sm:text-base text-slate-500 max-w-lg mx-auto">
+            Сучасний стек інструментів для навчання, авторства та адміністрування.
           </p>
+        </div>
 
-          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-5">
-            {features.map((feature) => (
-              <div
-                key={feature.title}
-                className="bg-surface rounded-xl border border-border p-5 text-center hover:shadow-[var(--shadow-card-hover)] transition-shadow duration-200"
-              >
-                <div className="text-3xl mb-3">{feature.icon}</div>
-                <h3 className="text-base font-semibold mb-2">
-                  {feature.title}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {features.map((item) => (
+            <div
+              key={item.title}
+              className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-3xl p-2.5 bg-slate-50 rounded-xl border border-slate-100 inline-block">
+                    {item.icon}
+                  </span>
+                  <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                    {item.tag}
+                  </span>
+                </div>
+                <h3 className="text-base font-bold text-slate-900 mb-2">
+                  {item.title}
                 </h3>
-                <p className="text-sm text-text-muted">{feature.description}</p>
+                <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                  {item.description}
+                </p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-6 text-center text-sm text-text-muted">
-        © 2026 StudyHub. Лабораторна робота №1.
+      <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
+        <p className="font-semibold text-slate-700 mb-1">StudyHub Education</p>
+        <p>© 2026 StudyHub. Курсова робота з дисципліни «Фулл-стек розробка».</p>
       </footer>
     </div>
   );

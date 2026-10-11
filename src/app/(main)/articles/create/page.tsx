@@ -1,10 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Snackbar, Alert } from "@mui/material";
 
 const categories = [
   "Програмування",
+  "Веброзробка",
+  "Бази даних",
+  "Алгоритми",
+  "DevOps",
   "Математика",
   "Фізика",
   "Історія",
@@ -13,18 +18,45 @@ const categories = [
 ];
 
 export default function CreateArticlePage() {
+  const router = useRouter();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [excerpt, setExcerpt] = useState("");
   const [category, setCategory] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Реальне збереження буде в ЛР2
-    setShowSuccess(true);
-    setTitle("");
-    setContent("");
-    setCategory("");
+    setError("");
+    setSubmitting(true);
+
+    try {
+      const res = await fetch("/api/articles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, content, excerpt, category }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Помилка створення");
+      }
+
+      setShowSuccess(true);
+      setTitle("");
+      setContent("");
+      setExcerpt("");
+      setCategory("");
+
+      // Перенаправити до списку через 2 секунди
+      setTimeout(() => router.push("/articles"), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Помилка створення");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const inputStyles =
@@ -57,6 +89,20 @@ export default function CreateArticlePage() {
         </div>
 
         <div>
+          <label htmlFor="excerpt" className="block text-sm font-medium mb-1.5">
+            Короткий опис
+          </label>
+          <input
+            id="excerpt"
+            type="text"
+            value={excerpt}
+            onChange={(e) => setExcerpt(e.target.value)}
+            placeholder="Опишіть матеріал коротко..."
+            className={inputStyles}
+          />
+        </div>
+
+        <div>
           <label htmlFor="content" className="block text-sm font-medium mb-1.5">
             Зміст
           </label>
@@ -64,7 +110,7 @@ export default function CreateArticlePage() {
             id="content"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Опишіть матеріал..."
+            placeholder="Повний текст матеріалу..."
             required
             rows={6}
             className={`${inputStyles} resize-y`}
@@ -72,10 +118,7 @@ export default function CreateArticlePage() {
         </div>
 
         <div>
-          <label
-            htmlFor="category"
-            className="block text-sm font-medium mb-1.5"
-          >
+          <label htmlFor="category" className="block text-sm font-medium mb-1.5">
             Категорія
           </label>
           <select
@@ -85,22 +128,23 @@ export default function CreateArticlePage() {
             required
             className={inputStyles}
           >
-            <option value="" disabled>
-              Оберіть категорію
-            </option>
+            <option value="" disabled>Оберіть категорію</option>
             {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
+              <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
         </div>
 
+        {error && (
+          <p className="text-sm text-error text-center font-medium">{error}</p>
+        )}
+
         <button
           type="submit"
-          className="w-full py-2.5 px-4 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark transition-colors"
+          disabled={submitting}
+          className="w-full py-2.5 px-4 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
         >
-          Створити матеріал
+          {submitting ? "Створення..." : "Створити матеріал"}
         </button>
       </form>
 
@@ -116,7 +160,7 @@ export default function CreateArticlePage() {
           variant="filled"
           sx={{ width: "100%" }}
         >
-          Матеріал успішно створено!
+          Матеріал успішно створено! Перенаправлення до списку...
         </Alert>
       </Snackbar>
     </div>
