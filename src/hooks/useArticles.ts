@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { Article } from "@/types";
+import { Article, PaginatedResponse } from "@/types";
 
 // Загальний fetcher для SWR
 const fetcher = (url: string) =>
@@ -8,15 +8,34 @@ const fetcher = (url: string) =>
     return res.json();
   });
 
+interface UseArticlesParams {
+  search?: string;
+  category?: string;
+  page?: number;
+  limit?: number;
+}
+
 // Хук для отримання списку статей
-export function useArticles() {
-  const { data, error, isLoading, mutate } = useSWR<Article[]>(
-    "/api/articles",
+export function useArticles(params?: UseArticlesParams) {
+  const searchParams = new URLSearchParams();
+  
+  if (params?.search) searchParams.set("search", params.search);
+  if (params?.category) searchParams.set("category", params.category);
+  if (params?.page) searchParams.set("page", params.page.toString());
+  if (params?.limit) searchParams.set("limit", params.limit.toString());
+  
+  const queryString = searchParams.toString();
+  const url = queryString ? `/api/articles?${queryString}` : "/api/articles";
+
+  const { data, error, isLoading, mutate } = useSWR<PaginatedResponse<Article>>(
+    url,
     fetcher
   );
 
   return {
-    articles: data ?? [],
+    data,
+    articles: data?.data ?? [],
+    pagination: data?.pagination,
     isLoading,
     isError: !!error,
     mutate,

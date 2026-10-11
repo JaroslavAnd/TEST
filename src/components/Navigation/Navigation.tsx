@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   ArticleOutlined,
   BookmarkBorderOutlined,
   PersonOutlined,
   SecurityOutlined,
+  AdminPanelSettingsOutlined,
 } from "@mui/icons-material";
 import styles from "./Navigation.module.css";
 
@@ -35,10 +37,19 @@ const navItems = [
     icon: SecurityOutlined,
     section: "profile",
   },
+  {
+    label: "Адмін-панель",
+    href: "/admin",
+    icon: AdminPanelSettingsOutlined,
+    section: "admin",
+  },
 ];
 
 export default function Navigation() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+
+  const isAdmin = session?.user?.role === "ADMIN";
 
   const isActive = (href: string) => {
     if (href === "/articles") {
@@ -47,11 +58,22 @@ export default function Navigation() {
     if (href === "/profile") {
       return pathname === "/profile";
     }
+    if (href === "/admin") {
+      return pathname === "/admin" || pathname.startsWith("/admin/");
+    }
     return pathname.startsWith(href);
   };
 
-  const articleItems = navItems.filter((item) => item.section === "articles");
-  const profileItems = navItems.filter((item) => item.section === "profile");
+  const visibleNavItems = navItems.filter((item) => {
+    if (item.section === "admin") {
+      return isAdmin;
+    }
+    return true;
+  });
+
+  const articleItems = visibleNavItems.filter((item) => item.section === "articles");
+  const profileItems = visibleNavItems.filter((item) => item.section === "profile");
+  const adminItems = visibleNavItems.filter((item) => item.section === "admin");
 
   return (
     <>
@@ -90,12 +112,33 @@ export default function Navigation() {
             </li>
           ))}
         </ul>
+
+        {isAdmin && adminItems.length > 0 && (
+          <>
+            <p className={styles.sectionTitle}>Адміністрування</p>
+            <ul className={styles.navList}>
+              {adminItems.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={`${styles.navItem} ${
+                      isActive(item.href) ? styles.navItemActive : ""
+                    }`}
+                  >
+                    <item.icon fontSize="small" />
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </nav>
 
       {/* Мобільна нижня навігація */}
       <nav className={styles.mobileNav}>
         <ul className={styles.mobileNavList}>
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <li key={item.href}>
               <Link
                 href={item.href}

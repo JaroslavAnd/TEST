@@ -17,5 +17,6 @@ export const config = {
     "/profile/security",
     "/articles/create",
     "/articles/:id/edit",
+    "/admin/:path*",
   ],
 };

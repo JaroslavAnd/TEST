@@ -3,17 +3,53 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 
 // GET /api/articles — список усіх статей (публічний)
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const articles = await prisma.article.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        author: {
-          select: { id: true, name: true, image: true },
+    const searchParams = request.nextUrl.searchParams;
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
+    const limit = Math.max(1, parseInt(searchParams.get("limit") || "9"));
+    const search = searchParams.get("search") || "";
+    const category = searchParams.get("category") || "";
+
+    const where: any = {};
+    
+    if (category) {
+      where.category = category;
+    }
+    
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { content: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    const [articles, total] = await Promise.all([
+      prisma.article.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          author: {
+            select: { id: true, name: true, image: true },
+          },
         },
-      },
+      }),
+      prisma.article.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return Response.json({
+      data: articles,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+      }
     });
-    return Response.json(articles);
   } catch {
     return Response.json(
       { error: "Не вдалося отримати статті" },

@@ -1,29 +1,28 @@
 @import "tailwindcss";
 
-/* ===== Глобальні CSS-змінні ===== */
+/* ===== Сучасна преміальна дизайн-система ===== */
 :root {
-  --color-primary: #2563eb;
+  --color-primary: #3b82f6;
   --color-primary-dark: #1d4ed8;
   --color-primary-light: #60a5fa;
   --color-secondary: #0f172a;
-  --color-accent: #f59e0b;
+  --color-accent: #6366f1;
   --color-background: #f8fafc;
   --color-surface: #ffffff;
-  --color-text: #1e293b;
+  --color-text: #0f172a;
   --color-text-secondary: #64748b;
   --color-border: #e2e8f0;
-  --color-success: #22c55e;
+  --color-success: #10b981;
   --color-error: #ef4444;
 
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  --shadow-card-hover: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.03);
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
 }
 
-/* ===== Tailwind v4 Theme — кастомні кольори та breakpoints ===== */
 @theme inline {
   --color-primary: var(--color-primary);
   --color-primary-dark: var(--color-primary-dark);
@@ -37,7 +36,6 @@
   --color-success: var(--color-success);
   --color-error: var(--color-error);
 
-  /* Кастомні breakpoints */
   --breakpoint-xs: 480px;
   --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
@@ -48,7 +46,6 @@
   --font-sans: var(--font-sans);
 }
 
-/* ===== Типографіка ===== */
 * {
   margin: 0;
   padding: 0;
@@ -65,24 +62,36 @@ body {
   color: var(--color-text);
   line-height: 1.6;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Приємні градієнтні бекграунди для блоків */
+.bg-mesh-glow {
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(236, 72, 153, 0.05) 0px, transparent 50%);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
-  line-height: 1.3;
+  letter-spacing: -0.02em;
   color: var(--color-secondary);
 }
-
-h1 { font-size: 2.25rem; }
-h2 { font-size: 1.75rem; }
-h3 { font-size: 1.25rem; }
 
 a {
   color: inherit;
   text-decoration: none;
 }
 
-/* ===== Загальний Layout ===== */
 .page-container {
   max-width: 1200px;
   margin: 0 auto;

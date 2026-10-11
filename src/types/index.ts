@@ -35,3 +35,30 @@ export interface UpdateArticleData {
   excerpt?: string;
   category?: string;
 }
+
+export interface CommentAuthor {
+  id: string;
+  name: string | null;
+  image: string | null;
+}
+
+export interface Comment {
+  id: number;
+  content: string;
+  articleId: number;
+  authorId: string;
+  author: CommentAuthor;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
