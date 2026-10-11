@@ -6,6 +6,8 @@ import {
   truncateText,
   isArticleAuthor,
   canEditArticle,
+  readingTimeMinutes,
+  pluralize,
 } from "@/lib/format";
 
 // ============================
@@ -166,13 +168,53 @@ describe("canEditArticle", () => {
     expect(canEditArticle("user1", "user2")).toBe(false);
   });
 
-  it("дозволяє будь-якому авторизованому редагувати статтю без автора", () => {
-    expect(canEditArticle("user1", null)).toBe(true);
-    expect(canEditArticle("user1", undefined)).toBe(true);
+  it("дозволяє адміністратору редагувати будь-яку статтю", () => {
+    expect(canEditArticle("admin1", "user2", "ADMIN")).toBe(true);
+    expect(canEditArticle("admin1", null, "ADMIN")).toBe(true);
+  });
+
+  it("статтю без автора може редагувати лише адміністратор", () => {
+    expect(canEditArticle("user1", null)).toBe(false);
+    expect(canEditArticle("user1", undefined)).toBe(false);
+    expect(canEditArticle("user1", null, "USER")).toBe(false);
   });
 
   it("забороняє неавторизованому користувачу", () => {
     expect(canEditArticle(undefined, null)).toBe(false);
     expect(canEditArticle(undefined, "user1")).toBe(false);
+    expect(canEditArticle(undefined, "user1", "ADMIN")).toBe(false);
+  });
+});
+
+describe("readingTimeMinutes", () => {
+  it("повертає щонайменше 1 хвилину", () => {
+    expect(readingTimeMinutes("")).toBe(1);
+    expect(readingTimeMinutes("кілька слів")).toBe(1);
+  });
+
+  it("округлює вгору за ~180 слів на хвилину", () => {
+    expect(readingTimeMinutes("слово ".repeat(180))).toBe(1);
+    expect(readingTimeMinutes("слово ".repeat(181))).toBe(2);
+    expect(readingTimeMinutes("слово ".repeat(900))).toBe(5);
+  });
+});
+
+describe("pluralize", () => {
+  const forms: [string, string, string] = ["матеріал", "матеріали", "матеріалів"];
+
+  it("вибирає правильну форму для українських числівників", () => {
+    expect(pluralize(1, forms)).toBe("матеріал");
+    expect(pluralize(2, forms)).toBe("матеріали");
+    expect(pluralize(4, forms)).toBe("матеріали");
+    expect(pluralize(5, forms)).toBe("матеріалів");
+    expect(pluralize(0, forms)).toBe("матеріалів");
+  });
+
+  it("обробляє 11–14 та складені числа", () => {
+    expect(pluralize(11, forms)).toBe("матеріалів");
+    expect(pluralize(14, forms)).toBe("матеріалів");
+    expect(pluralize(21, forms)).toBe("матеріал");
+    expect(pluralize(22, forms)).toBe("матеріали");
+    expect(pluralize(111, forms)).toBe("матеріалів");
   });
 });

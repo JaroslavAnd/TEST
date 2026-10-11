@@ -1,11 +1,12 @@
-import Header from "@/components/Header";
 import Navigation from "@/components/Navigation/Navigation";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-1">
+    <>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-8 md:px-8 md:pb-16 md:pt-12">
+        {children}
+      </main>
       <Navigation />
-      <main className="flex-1 p-4 md:p-8 pb-20 md:pb-8 max-w-7xl">{children}</main>
-    </div>
+    </>
   );
 }

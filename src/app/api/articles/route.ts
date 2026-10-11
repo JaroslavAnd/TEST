@@ -1,22 +1,24 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { parsePagination } from "@/lib/pagination";
+import { isValidCategory, validateArticle } from "@/lib/validation";
+import type { Prisma } from "@/generated/prisma/client";
 
-// GET /api/articles — список усіх статей (публічний)
+// GET /api/articles — список статей з пагінацією, пошуком і фільтром (публічний)
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
-    const limit = Math.max(1, parseInt(searchParams.get("limit") || "9"));
-    const search = searchParams.get("search") || "";
+    const { page, limit, skip } = parsePagination(searchParams, { defaultLimit: 9, maxLimit: 50 });
+    const search = (searchParams.get("search") || "").trim().slice(0, 100);
     const category = searchParams.get("category") || "";
 
-    const where: any = {};
-    
+    const where: Prisma.ArticleWhereInput = {};
+
     if (category) {
       where.category = category;
     }
-    
+
     if (search) {
       where.OR = [
         { title: { contains: search, mode: "insensitive" } },
@@ -28,7 +30,7 @@ export async function GET(request: NextRequest) {
       prisma.article.findMany({
         where,
         orderBy: { createdAt: "desc" },
-        skip: (page - 1) * limit,
+        skip,
         take: limit,
         include: {
           author: {
@@ -39,18 +41,17 @@ export async function GET(request: NextRequest) {
       prisma.article.count({ where }),
     ]);
 
-    const totalPages = Math.ceil(total / limit);
-
     return Response.json({
       data: articles,
       pagination: {
         total,
         page,
         limit,
-        totalPages,
-      }
+        totalPages: Math.ceil(total / limit),
+      },
     });
-  } catch {
+  } catch (error) {
+    console.error("GET /api/articles failed:", error);
     return Response.json(
       { error: "Не вдалося отримати статті" },
       { status: 500 }
@@ -68,22 +69,26 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, content, excerpt, category } = body;
+    const title = typeof body.title === "string" ? body.title.trim() : "";
+    const content = typeof body.content === "string" ? body.content.trim() : "";
+    const category = typeof body.category === "string" ? body.category : "";
+    const excerpt = typeof body.excerpt === "string" ? body.excerpt.trim() : "";
 
-    // Валідація обов'язкових полів
-    if (!title || !content || !category) {
-      return Response.json(
-        { error: "Поля title, content та category є обов'язковими" },
-        { status: 400 }
-      );
+    // Валідація (раніше перевірялась лише наявність полів)
+    const validation = validateArticle({ title, content, category, excerpt });
+    if (!validation.valid) {
+      return Response.json({ error: validation.error }, { status: 400 });
+    }
+    if (!isValidCategory(category)) {
+      return Response.json({ error: "Невідома категорія" }, { status: 400 });
     }
 
     const article = await prisma.article.create({
       data: {
-        title: String(title),
-        content: String(content),
-        excerpt: excerpt ? String(excerpt) : String(content).slice(0, 200),
-        category: String(category),
+        title,
+        content,
+        excerpt: excerpt || content.slice(0, 200),
+        category,
         authorId: session.user.id,
       },
       include: {
@@ -94,7 +99,8 @@ export async function POST(request: NextRequest) {
     });
 
     return Response.json(article, { status: 201 });
-  } catch {
+  } catch (error) {
+    console.error("POST /api/articles failed:", error);
     return Response.json(
       { error: "Не вдалося створити статтю" },
       { status: 500 }

@@ -88,6 +88,7 @@ const articles = [
 
 async function main() {
   console.log("🌱 Seed: видаляємо старі дані...");
+  await prisma.comment.deleteMany();
   await prisma.article.deleteMany();
   await prisma.account.deleteMany();
   await prisma.session.deleteMany();
@@ -108,15 +109,38 @@ async function main() {
 
   console.log(`✅ Створено користувача: ${user.email} (пароль: password123)`);
 
+  // Без адміністратора в сідах до адмін-панелі неможливо потрапити
+  const adminPassword = await bcrypt.hash("admin12345", 10);
+  const admin = await prisma.user.create({
+    data: {
+      name: "Адміністратор",
+      email: "admin@studyhub.com",
+      password: adminPassword,
+      role: "ADMIN",
+    },
+  });
+  console.log(`✅ Створено адміністратора: ${admin.email} (пароль: admin12345)`);
+
   console.log("🌱 Seed: додаємо навчальні матеріали...");
+  const created = [];
   for (const article of articles) {
-    await prisma.article.create({
-      data: {
-        ...article,
-        authorId: user.id,
-      },
-    });
+    created.push(
+      await prisma.article.create({
+        data: {
+          ...article,
+          authorId: user.id,
+        },
+      })
+    );
   }
+
+  console.log("🌱 Seed: додаємо коментарі...");
+  await prisma.comment.createMany({
+    data: [
+      { articleId: created[0].id, authorId: admin.id, content: "Корисний вступ. Було б добре додати приклад із generics." },
+      { articleId: created[0].id, authorId: user.id, content: "Дякую! Додам приклад у наступному оновленні." },
+    ],
+  });
 
   const count = await prisma.article.count();
   console.log(`✅ Seed завершено: додано ${count} статей`);

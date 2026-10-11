@@ -53,9 +53,8 @@ describe("ArticleCard", () => {
 
   it("містить посилання на статтю", () => {
     render(<ArticleCard article={mockArticle} />);
-    const link = screen.getByText("Переглянути →");
-    expect(link).toBeInTheDocument();
-    expect(link.closest("a")).toHaveAttribute("href", "/articles/1");
+    const link = screen.getByRole("link", { name: "Основи TypeScript" });
+    expect(link).toHaveAttribute("href", "/articles/1");
   });
 
   it("не відображає автора якщо author = null", () => {

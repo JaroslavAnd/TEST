@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 
 interface CommentFormProps {
   articleId: number;
   onSuccess: () => void;
 }
+
+const MAX_LENGTH = 1000;
 
 export function CommentForm({ articleId, onSuccess }: CommentFormProps) {
   const { data: session } = useSession();
@@ -16,11 +19,9 @@ export function CommentForm({ articleId, onSuccess }: CommentFormProps) {
 
   if (!session) {
     return (
-      <div className="bg-surface p-5 rounded-xl border border-border mb-6">
-        <p className="text-text-muted text-center">
-          Увійдіть, щоб залишити коментар
-        </p>
-      </div>
+      <p className="mb-6 rounded-md border border-dashed border-slate-300 bg-surface px-5 py-4 text-text-muted">
+        Щоб залишити коментар, <Link href="/login" className="font-semibold text-ink underline underline-offset-4">увійдіть в акаунт</Link>.
+      </p>
     );
   }
 
@@ -31,57 +32,55 @@ export function CommentForm({ articleId, onSuccess }: CommentFormProps) {
     try {
       setIsSubmitting(true);
       setError(null);
-      
+
       const res = await fetch(`/api/articles/${articleId}/comments`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Помилка при створенні коментаря");
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Не вдалося надіслати коментар");
       }
 
       setContent("");
       onSuccess();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Не вдалося надіслати коментар");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm mb-6">
-      <h3 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-        <span>💬</span> Залишити коментар
-      </h3>
-      
-      <div className="mb-3">
-        <textarea
-          className="w-full bg-slate-50 border border-slate-200/90 rounded-xl p-3.5 text-sm text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
-          rows={3}
-          placeholder="Поділіться вашими думками щодо матеріалу..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          disabled={isSubmitting}
-        />
-      </div>
-      
+    <form onSubmit={handleSubmit} className="mb-8 rounded-md border border-rule bg-surface p-4 sm:p-5">
+      <label htmlFor="comment-text" className="mb-2 block text-sm font-semibold">
+        Ваш коментар
+      </label>
+      <textarea
+        id="comment-text"
+        className="field resize-y"
+        rows={3}
+        maxLength={MAX_LENGTH}
+        placeholder="Запитайте автора або поділіться власним прикладом"
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        disabled={isSubmitting}
+      />
+
       {error && (
-        <p className="text-error mb-3 text-xs font-semibold">{error}</p>
+        <p role="alert" className="mt-2 text-sm font-medium text-error">
+          {error}
+        </p>
       )}
-      
-      <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={!content.trim() || isSubmitting}
-          className="bg-primary hover:bg-primary-dark text-white px-5 py-2 rounded-xl text-xs font-semibold disabled:opacity-50 transition-all shadow-sm shadow-primary/20"
-        >
-          {isSubmitting ? "Надсилання..." : "Опублікувати коментар"}
+
+      <div className="mt-3 flex items-center justify-between gap-4">
+        <span className="text-xs text-text-muted">
+          {content.length} / {MAX_LENGTH}
+        </span>
+        <button type="submit" disabled={!content.trim() || isSubmitting} className="btn btn-primary btn-sm">
+          {isSubmitting ? "Надсилаємо…" : "Надіслати"}
         </button>
       </div>
     </form>

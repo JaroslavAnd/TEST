@@ -15,21 +15,23 @@ interface UseArticlesParams {
   limit?: number;
 }
 
-// Хук для отримання списку статей
+// Хук для отримання списку статей (з пагінацією, пошуком і фільтром)
 export function useArticles(params?: UseArticlesParams) {
   const searchParams = new URLSearchParams();
-  
+
   if (params?.search) searchParams.set("search", params.search);
   if (params?.category) searchParams.set("category", params.category);
   if (params?.page) searchParams.set("page", params.page.toString());
   if (params?.limit) searchParams.set("limit", params.limit.toString());
-  
+
   const queryString = searchParams.toString();
   const url = queryString ? `/api/articles?${queryString}` : "/api/articles";
 
-  const { data, error, isLoading, mutate } = useSWR<PaginatedResponse<Article>>(
+  // keepPreviousData — список не блимає порожнім скелетом при зміні фільтра чи сторінки
+  const { data, error, isLoading, isValidating, mutate } = useSWR<PaginatedResponse<Article>>(
     url,
-    fetcher
+    fetcher,
+    { keepPreviousData: true }
   );
 
   return {
@@ -37,6 +39,7 @@ export function useArticles(params?: UseArticlesParams) {
     articles: data?.data ?? [],
     pagination: data?.pagination,
     isLoading,
+    isValidating,
     isError: !!error,
     mutate,
   };

@@ -29,7 +29,7 @@ test.describe("Login flow", () => {
   test("містить кнопку входу", async ({ page }) => {
     await page.goto("/login");
 
-    const loginButton = page.getByRole("button", { name: /увійти/i });
+    const loginButton = page.getByRole("button", { name: "Увійти", exact: true });
     await expect(loginButton).toBeVisible();
   });
 

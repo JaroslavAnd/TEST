@@ -54,13 +54,32 @@ export function isArticleAuthor(
   return userId === authorId;
 }
 
-// Чи можна редагувати статтю
+// Чи можна редагувати/видаляти статтю:
+// автор — свою, адміністратор — будь-яку.
+// Стаття без автора (залишок старих даних) доступна лише адміністратору.
 export function canEditArticle(
   userId: string | undefined,
-  authorId: string | null | undefined
+  authorId: string | null | undefined,
+  role?: string
 ): boolean {
   if (!userId) return false;
-  // Статті без автора можуть редагувати всі авторизовані
-  if (!authorId) return true;
+  if (role === "ADMIN") return true;
+  if (!authorId) return false;
   return userId === authorId;
+}
+
+// Час читання в хвилинах (≈180 слів/хв для українського тексту)
+export function readingTimeMinutes(content: string): number {
+  const words = content.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.ceil(words / 180));
+}
+
+// Українська множина: pluralize(2, ["матеріал", "матеріали", "матеріалів"])
+export function pluralize(n: number, forms: [string, string, string]): string {
+  const abs = Math.abs(n) % 100;
+  const last = abs % 10;
+  if (abs > 10 && abs < 20) return forms[2];
+  if (last === 1) return forms[0];
+  if (last >= 2 && last <= 4) return forms[1];
+  return forms[2];
 }

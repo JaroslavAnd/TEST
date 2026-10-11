@@ -64,23 +64,16 @@ export default function RegisterPage() {
   };
 
   const inputStyles =
-    "w-full px-3.5 py-2.5 rounded-lg border border-border bg-surface text-sm text-text-main focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors";
+    "field";
 
   return (
     <div className="w-full max-w-md">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-2 mb-4">
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-lg font-bold text-white">
-            S
-          </div>
-          <span className="text-2xl font-bold text-white">StudyHub</span>
-        </div>
-        <h1 className="text-xl font-semibold text-white/90">
-          Створити акаунт
-        </h1>
+      <div className="mb-6">
+        <h1 className="text-3xl font-extrabold tracking-tight">Створити акаунт</h1>
+        <p className="mt-2 text-text-muted">Це безкоштовно. Потрібні лише ім’я та email.</p>
       </div>
 
-      <div className="bg-surface rounded-2xl border border-border p-6 shadow-lg">
+      <div className="sheet p-6 sm:p-7">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium mb-1.5">
@@ -157,7 +150,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 px-4 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
+            className="btn btn-primary w-full"
           >
             {loading ? "Реєстрація..." : "Зареєструватися"}
           </button>

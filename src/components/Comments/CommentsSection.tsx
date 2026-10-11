@@ -11,19 +11,13 @@ interface CommentsSectionProps {
 export function CommentsSection({ articleId }: CommentsSectionProps) {
   const { comments, isLoading, mutate } = useComments(articleId);
 
-  const handleSuccess = () => {
-    mutate();
-  };
-
-  const handleDelete = () => {
-    mutate();
-  };
-
   return (
-    <section className="mt-10">
-      <h2 className="text-2xl font-bold text-text-main mb-6">Коментарі ({comments.length})</h2>
-      <CommentForm articleId={articleId} onSuccess={handleSuccess} />
-      <CommentList comments={comments} isLoading={isLoading} onDelete={handleDelete} />
+    <section className="mt-14" aria-labelledby="comments-title">
+      <h2 id="comments-title" className="mb-6 text-2xl font-bold">
+        Коментарі{!isLoading && comments.length > 0 ? ` (${comments.length})` : ""}
+      </h2>
+      <CommentForm articleId={articleId} onSuccess={() => mutate()} />
+      <CommentList comments={comments} isLoading={isLoading} onDelete={() => mutate()} />
     </section>
   );
 }

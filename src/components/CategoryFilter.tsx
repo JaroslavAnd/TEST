@@ -8,28 +8,29 @@ interface CategoryFilterProps {
 }
 
 export default function CategoryFilter({ selected, onChange }: CategoryFilterProps) {
+  const base =
+    "rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors";
+  const idle = "border-rule bg-surface text-text-muted hover:border-ink hover:text-ink";
+  const active = "border-marker bg-marker text-text-main";
+
   return (
-    <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide py-1">
+    <div role="group" aria-label="Фільтр за темою" className="flex flex-wrap gap-2">
       <button
+        type="button"
+        aria-pressed={selected === null}
         onClick={() => onChange(null)}
-        className={`px-3.5 py-1.5 rounded-full whitespace-nowrap text-xs font-semibold tracking-wide transition-all duration-200 ${
-          selected === null
-            ? "bg-primary text-white shadow-sm shadow-primary/20 scale-[1.02]"
-            : "bg-white text-slate-600 border border-slate-200/90 hover:border-slate-300 hover:bg-slate-50"
-        }`}
+        className={`${base} ${selected === null ? active : idle}`}
       >
-        Всі теми
+        Усі теми
       </button>
-      
+
       {ARTICLE_CATEGORIES.map((category) => (
         <button
           key={category}
+          type="button"
+          aria-pressed={selected === category}
           onClick={() => onChange(category)}
-          className={`px-3.5 py-1.5 rounded-full whitespace-nowrap text-xs font-semibold tracking-wide transition-all duration-200 ${
-            selected === category
-              ? "bg-primary text-white shadow-sm shadow-primary/20 scale-[1.02]"
-              : "bg-white text-slate-600 border border-slate-200/90 hover:border-slate-300 hover:bg-slate-50"
-          }`}
+          className={`${base} ${selected === category ? active : idle}`}
         >
           {category}
         </button>

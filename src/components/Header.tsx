@@ -1,106 +1,136 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
-import { Avatar } from "@mui/material";
-import { LogoutOutlined, PersonOutlined } from "@mui/icons-material";
+import Avatar from "@/components/Avatar";
+import Logo from "@/components/Logo";
 
-const appName = process.env.NEXT_PUBLIC_APP_NAME || "StudyHub";
+const links = [
+  { label: "Матеріали", href: "/articles", match: (p: string) => p === "/articles" || /^\/articles\/\d+/.test(p) },
+  { label: "Обране", href: "/articles/favorite", match: (p: string) => p.startsWith("/articles/favorite") },
+];
 
 export default function Header() {
   const { data: session } = useSession();
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const isAdmin = session?.user?.role === "ADMIN";
 
-  // Закриття меню при кліку поза ним
+  // Закриття меню при кліку поза ним або за Escape
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    function onPointerDown(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
   }, []);
 
+  const menuItem =
+    "block w-full px-4 py-2 text-left text-sm text-text-main hover:bg-slate-50";
+
   return (
-    <header className="h-16 sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-border text-text-main flex items-center justify-between px-4 md:px-8 flex-shrink-0 transition-all">
-      <Link href="/" className="flex items-center gap-2.5 group">
-        <div className="w-9 h-9 bg-gradient-to-tr from-primary to-accent rounded-xl flex items-center justify-center text-white font-extrabold text-base shadow-sm group-hover:scale-105 transition-transform duration-200">
-          S
-        </div>
-        <div className="flex flex-col">
-          <span className="text-lg font-bold tracking-tight text-slate-900 group-hover:text-primary transition-colors">
-            Study<span className="text-primary font-normal">Hub</span>
-          </span>
-        </div>
-      </Link>
+    <header className="sticky top-0 z-40 border-b border-rule bg-surface/90 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 md:px-8">
+        <Logo />
 
-      <div className="flex items-center gap-3">
-        {session?.user ? (
-          <div className="relative" ref={menuRef}>
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="flex items-center gap-2.5 p-1.5 pr-3 rounded-full hover:bg-slate-100 transition-colors border border-transparent hover:border-border"
-            >
-              <Avatar
-                src={session.user.image || undefined}
-                alt={session.user.name || "User"}
-                sx={{ width: 34, height: 34, fontSize: "0.875rem", bgcolor: "#3b82f6" }}
+        <nav aria-label="Основна навігація" className="hidden items-center gap-1 md:flex">
+          {links.map((link) => {
+            const active = link.match(pathname);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={active ? "page" : undefined}
+                className="rounded-md px-3 py-2 text-sm font-medium text-text-muted hover:text-ink aria-[current=page]:text-text-main"
               >
-                {session.user.name?.charAt(0)?.toUpperCase() || "U"}
-              </Avatar>
-              <div className="text-left hidden sm:block">
-                <p className="text-xs font-semibold text-slate-800 leading-tight">
-                  {session.user.name || "Користувач"}
-                </p>
-                <p className="text-[11px] text-text-muted leading-tight truncate max-w-[120px]">
-                  {session.user.role === "ADMIN" ? "🛡️ Адмін" : "Студент"}
-                </p>
-              </div>
-            </button>
+                <span className={active ? "marker" : ""}>{link.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
 
-            {menuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl border border-border shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
-                <div className="px-4 py-2 border-b border-border/60 mb-1">
-                  <p className="text-xs font-semibold text-slate-900">{session.user.name}</p>
-                  <p className="text-[11px] text-text-muted truncate">{session.user.email}</p>
-                </div>
-                <Link
-                  href="/profile"
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors"
-                >
-                  <PersonOutlined fontSize="small" className="text-text-muted" />
-                  Мій профіль
-                </Link>
+        <div className="ml-auto flex items-center gap-2">
+          {session?.user ? (
+            <>
+              <Link href="/articles/create" className="btn btn-primary btn-sm hidden sm:inline-flex">
+                Написати статтю
+              </Link>
+
+              <div className="relative" ref={menuRef}>
                 <button
-                  onClick={() => signOut({ callbackUrl: "/" })}
-                  className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-error hover:bg-red-50/60 transition-colors"
+                  type="button"
+                  onClick={() => setMenuOpen((v) => !v)}
+                  aria-haspopup="menu"
+                  aria-expanded={menuOpen}
+                  aria-label="Меню акаунта"
+                  className="flex items-center gap-2 rounded-full border border-transparent p-1 pr-2 hover:border-rule"
                 >
-                  <LogoutOutlined fontSize="small" />
-                  Вийти з акаунта
+                  <Avatar name={session.user.name} image={session.user.image} size={32} />
+                  <span className="hidden max-w-[10rem] truncate text-sm font-medium sm:block">
+                    {session.user.name || "Користувач"}
+                  </span>
                 </button>
+
+                {menuOpen && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 top-full z-50 mt-2 w-60 overflow-hidden rounded-lg border border-rule bg-surface py-1 shadow-lg"
+                  >
+                    <div className="border-b border-rule px-4 py-3">
+                      <p className="truncate text-sm font-semibold">{session.user.name}</p>
+                      <p className="truncate text-xs text-text-muted">{session.user.email}</p>
+                      {isAdmin && (
+                        <p className="mt-1.5 inline-block rounded bg-marker-soft px-1.5 py-0.5 text-xs font-semibold text-text-main">
+                          Адміністратор
+                        </p>
+                      )}
+                    </div>
+                    <Link role="menuitem" href="/profile" onClick={() => setMenuOpen(false)} className={menuItem}>
+                      Профіль
+                    </Link>
+                    <Link role="menuitem" href="/profile/security" onClick={() => setMenuOpen(false)} className={menuItem}>
+                      Безпека
+                    </Link>
+                    {isAdmin && (
+                      <Link role="menuitem" href="/admin" onClick={() => setMenuOpen(false)} className={menuItem}>
+                        Адмін-панель
+                      </Link>
+                    )}
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => signOut({ callbackUrl: "/" })}
+                      className={`${menuItem} border-t border-rule text-margin`}
+                    >
+                      Вийти
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <Link
-              href="/login"
-              className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-primary transition-colors"
-            >
-              Увійти
-            </Link>
-            <Link
-              href="/register"
-              className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-primary to-primary-dark rounded-xl shadow-sm hover:shadow-md hover:opacity-95 transition-all"
-            >
-              Реєстрація
-            </Link>
-          </div>
-        )}
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="btn btn-secondary btn-sm">
+                Увійти
+              </Link>
+              <Link href="/register" className="btn btn-primary btn-sm hidden sm:inline-flex">
+                Реєстрація
+              </Link>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );

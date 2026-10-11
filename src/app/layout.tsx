@@ -1,28 +1,39 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Onest, Literata } from "next/font/google";
 import SessionProvider from "@/components/SessionProvider";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
-const inter = Inter({
+const onest = Onest({
   subsets: ["latin", "cyrillic"],
-  variable: "--font-inter",
+  variable: "--font-onest",
+  display: "swap",
+});
+
+const literata = Literata({
+  subsets: ["latin", "cyrillic"],
+  variable: "--font-literata",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "StudyHub — навчальна платформа",
+  title: {
+    default: "StudyHub — спільний зошит для всіх, хто вчиться",
+    template: "%s — StudyHub",
+  },
   description:
-    "Вебплатформа для публікації та читання навчальних матеріалів. Переглядайте статті, зберігайте обране та створюйте власні матеріали.",
+    "Вебплатформа для публікації та читання навчальних матеріалів: статті за темами, пошук, коментарі та власні конспекти.",
 };
-
-import Header from "@/components/Header";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="uk" className={inter.variable}>
-      <body className="min-h-screen flex flex-col bg-slate-50 text-slate-900 antialiased">
+    <html lang="uk" className={`${onest.variable} ${literata.variable}`}>
+      <body className="flex min-h-screen flex-col font-sans">
         <SessionProvider>
           <Header />
-          <div className="flex-1 flex flex-col">{children}</div>
+          <div className="flex flex-1 flex-col">{children}</div>
+          <Footer />
         </SessionProvider>
       </body>
     </html>

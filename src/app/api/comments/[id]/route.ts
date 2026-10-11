@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { isAdminUser } from "@/lib/admin";
 
 export async function DELETE(
   req: NextRequest,
@@ -37,7 +38,8 @@ export async function DELETE(
       );
     }
 
-    if (comment.authorId !== session.user.id) {
+    // Видаляти може автор коментаря або адміністратор (модерація)
+    if (comment.authorId !== session.user.id && !(await isAdminUser(session.user.id))) {
       return NextResponse.json(
         { error: "Немає прав для видалення цього коментаря" },
         { status: 403 }

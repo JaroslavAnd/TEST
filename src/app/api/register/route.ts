@@ -1,24 +1,19 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { validateRegister } from "@/lib/validation";
 
 // POST /api/register — реєстрація нового користувача
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, password } = body;
+    const name = typeof body.name === "string" ? body.name.trim() : "";
+    // Email зберігаємо в нижньому регістрі, інакше «A@x.com» і «a@x.com» стануть різними акаунтами
+    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+    const password = typeof body.password === "string" ? body.password : "";
 
-    if (!name || !email || !password) {
-      return Response.json(
-        { error: "Поля name, email та password є обов'язковими" },
-        { status: 400 }
-      );
-    }
-
-    if (password.length < 6) {
-      return Response.json(
-        { error: "Пароль має бути не менше 6 символів" },
-        { status: 400 }
-      );
+    const validation = validateRegister({ name, email, password });
+    if (!validation.valid) {
+      return Response.json({ error: validation.error }, { status: 400 });
     }
 
     // Перевірка чи email вже зайнятий
@@ -38,8 +33,8 @@ export async function POST(request: Request) {
 
     const user = await prisma.user.create({
       data: {
-        name: String(name),
-        email: String(email),
+        name,
+        email,
         password: hashedPassword,
       },
     });
@@ -48,9 +43,12 @@ export async function POST(request: Request) {
       { id: user.id, name: user.name, email: user.email },
       { status: 201 }
     );
-  } catch {
+  } catch (error) {
+    console.error("Register API error:", error);
     return Response.json(
-      { error: "Не вдалося зареєструвати користувача" },
+      { 
+        error: error instanceof Error ? error.message : "Не вдалося зареєструвати користувача" 
+      },
       { status: 500 }
     );
   }

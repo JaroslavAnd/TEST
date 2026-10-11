@@ -3,9 +3,11 @@
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useArticle } from "@/hooks/useArticles";
 import { useState } from "react";
+import { useArticle } from "@/hooks/useArticles";
 import { CommentsSection } from "@/components/Comments/CommentsSection";
+import Avatar from "@/components/Avatar";
+import { canEditArticle, formatDate, readingTimeMinutes } from "@/lib/format";
 
 export default function ArticlePage() {
   const params = useParams();
@@ -15,32 +17,35 @@ export default function ArticlePage() {
   const { article, isLoading, isError } = useArticle(id);
   const [deleting, setDeleting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const handleDelete = async () => {
     setDeleting(true);
+    setDeleteError("");
     try {
       const res = await fetch(`/api/articles/${id}`, { method: "DELETE" });
       if (res.ok) {
         router.push("/articles");
-      } else {
-        const data = await res.json();
-        alert(data.error || "Помилка видалення");
-        setDeleting(false);
+        return;
       }
+      const data = await res.json().catch(() => ({}));
+      setDeleteError(data.error || "Не вдалося видалити статтю");
     } catch {
-      setDeleting(false);
+      setDeleteError("Не вдалося видалити статтю. Перевірте з’єднання.");
     }
+    setDeleting(false);
   };
 
   if (isLoading) {
     return (
-      <div className="max-w-3xl animate-pulse">
-        <div className="h-6 w-20 bg-border rounded-full mb-6" />
-        <div className="h-8 w-3/4 bg-border rounded mb-4" />
-        <div className="bg-surface rounded-xl border border-border p-5 mb-8">
-          <div className="h-4 w-full bg-border rounded mb-2" />
-          <div className="h-4 w-full bg-border rounded mb-2" />
-          <div className="h-4 w-2/3 bg-border rounded" />
+      <div className="mx-auto max-w-3xl animate-pulse" aria-busy="true">
+        <div className="mb-6 h-4 w-28 rounded bg-slate-100" />
+        <div className="mb-3 h-5 w-24 rounded bg-slate-100" />
+        <div className="mb-8 h-12 w-3/4 rounded bg-slate-100" />
+        <div className="rounded-md border border-rule bg-surface p-10">
+          <div className="mb-3 h-4 w-full rounded bg-slate-100" />
+          <div className="mb-3 h-4 w-full rounded bg-slate-100" />
+          <div className="h-4 w-2/3 rounded bg-slate-100" />
         </div>
       </div>
     );
@@ -48,102 +53,82 @@ export default function ArticlePage() {
 
   if (isError || !article) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="text-5xl mb-4">📄</div>
-        <h2 className="text-xl font-bold mb-2">Статтю не знайдено</h2>
-        <p className="text-text-muted mb-6">
-          На жаль, матеріал з таким ID не існує.
-        </p>
-        <Link
-          href="/articles"
-          className="text-sm font-medium text-primary hover:text-primary-dark transition-colors"
-        >
-          ← Повернутися до списку
+      <div className="mx-auto max-w-md py-16 text-center">
+        <h1 className="text-2xl font-bold">Статтю не знайдено</h1>
+        <p className="mt-2 text-text-muted">Можливо, її видалили або посилання неправильне.</p>
+        <Link href="/articles" className="btn btn-secondary mt-6">
+          До всіх матеріалів
         </Link>
       </div>
     );
   }
 
-  const formattedDate = new Date(article.createdAt).toLocaleDateString("uk-UA", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
-  // Перевірка чи поточний користувач є автором
-  const isAuthor = session?.user?.id && article.authorId === session.user.id;
-  // Статті без автора можуть редагувати всі авторизовані
-  const canEdit = session?.user && (!article.authorId || isAuthor);
+  const canEdit = canEditArticle(session?.user?.id, article.authorId, session?.user?.role);
+  const minutes = readingTimeMinutes(article.content);
+  const paragraphs = article.content.split(/\n{2,}/).filter((p) => p.trim());
 
   return (
-    <div className="max-w-4xl mx-auto py-2">
-      <div className="mb-6">
+    <div className="mx-auto max-w-3xl">
+      <Link href="/articles" className="text-sm font-medium text-text-muted hover:text-ink">
+        ← Усі матеріали
+      </Link>
+
+      <header className="mt-6">
         <Link
-          href="/articles"
-          className="text-xs font-semibold text-slate-500 hover:text-primary transition-colors inline-flex items-center gap-1.5"
+          href={`/articles?category=${encodeURIComponent(article.category)}`}
+          className="text-sm font-semibold text-ink hover:underline"
         >
-          <span>←</span> До всіх матеріалів
-        </Link>
-      </div>
-
-      <div className="flex items-center gap-2.5 mb-4 flex-wrap">
-        <span className="text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
           {article.category}
-        </span>
-        {article.author?.name && (
-          <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
-            <span>✍️</span> {article.author.name}
-          </span>
-        )}
-        <span className="text-xs text-slate-400">
-          • {formattedDate}
-        </span>
-      </div>
+        </Link>
+        <h1 className="mt-3 text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">{article.title}</h1>
 
-      <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-6 leading-tight tracking-tight">
-        {article.title}
-      </h1>
-
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-10 mb-8 shadow-sm">
-        <div className="prose prose-slate max-w-none text-slate-700 text-base sm:text-lg leading-relaxed whitespace-pre-line font-normal">
-          {article.content}
+        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-muted">
+          {article.author?.name && (
+            <span className="flex items-center gap-2">
+              <Avatar name={article.author.name} image={article.author.image} size={28} />
+              <span className="font-medium text-text-main">{article.author.name}</span>
+            </span>
+          )}
+          <time dateTime={article.createdAt}>{formatDate(article.createdAt)}</time>
+          <span>{minutes} хв читання</span>
         </div>
-      </div>
+      </header>
 
-      {/* Кнопки редагування та видалення — тільки для автора */}
+      <article className="sheet sheet-margin mt-8 py-8 pl-14 pr-5 sm:py-12 sm:pl-24 sm:pr-14">
+        <div className="space-y-5 font-serif text-[1.0625rem] leading-[1.85] text-slate-800 sm:text-lg sm:leading-[1.85]">
+          {paragraphs.map((p, i) => (
+            <p key={i} className="whitespace-pre-line">
+              {p}
+            </p>
+          ))}
+        </div>
+      </article>
+
       {canEdit && (
-        <div className="flex gap-3 mb-10 pb-6 border-b border-slate-200/80">
-          <Link
-            href={`/articles/${article.id}/edit`}
-            className="px-4 py-2 text-sm font-semibold bg-white border border-slate-200 text-slate-700 rounded-xl hover:border-slate-300 hover:bg-slate-50 transition-colors shadow-sm"
-          >
-            ✏️ Редагувати
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <Link href={`/articles/${article.id}/edit`} className="btn btn-secondary btn-sm">
+            Редагувати
           </Link>
 
           {!showConfirm ? (
-            <button
-              onClick={() => setShowConfirm(true)}
-              className="px-4 py-2 text-sm font-semibold text-error bg-red-50/50 border border-red-200/60 rounded-xl hover:bg-red-50 transition-colors"
-            >
+            <button type="button" onClick={() => setShowConfirm(true)} className="btn btn-danger btn-sm">
               Видалити
             </button>
           ) : (
-            <div className="flex items-center gap-2 bg-red-50/80 p-2 rounded-xl border border-red-200">
-              <span className="text-xs font-medium text-red-700">Ви впевнені?</span>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="px-3 py-1 text-xs font-semibold bg-error text-white rounded-lg hover:bg-error/90 transition-colors disabled:opacity-50"
-              >
-                {deleting ? "..." : "Так"}
+            <div className="flex items-center gap-2 rounded-lg border border-margin/30 bg-white px-3 py-1.5">
+              <span className="text-sm font-medium">Видалити назавжди?</span>
+              <button type="button" onClick={handleDelete} disabled={deleting} className="btn btn-danger btn-sm">
+                {deleting ? "Видаляємо…" : "Так, видалити"}
               </button>
-              <button
-                onClick={() => setShowConfirm(false)}
-                className="px-3 py-1 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50"
-              >
-                Ні
+              <button type="button" onClick={() => setShowConfirm(false)} className="btn btn-secondary btn-sm">
+                Скасувати
               </button>
             </div>
+          )}
+          {deleteError && (
+            <p role="alert" className="w-full text-sm font-medium text-error">
+              {deleteError}
+            </p>
           )}
         </div>
       )}

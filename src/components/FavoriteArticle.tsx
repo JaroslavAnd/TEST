@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Article } from "@/types";
+import { formatDate } from "@/lib/format";
 
 // Серверний компонент — отримує одну статтю за ID з нашого API
 async function fetchArticle(id: number): Promise<Article> {
@@ -15,29 +16,19 @@ export default async function FavoriteArticle({ id }: { id: number }) {
   const article = await fetchArticle(id);
 
   return (
-    <div className="bg-surface rounded-xl border border-border p-5 transition-shadow duration-200 hover:shadow-[var(--shadow-card-hover)]"
-      style={{ boxShadow: "var(--shadow-card)" }}
-    >
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-xs font-medium text-accent bg-accent/10 px-2 py-0.5 rounded-full">
-          ★ Обране
-        </span>
-        <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-          {article.category}
-        </span>
+    <article className="group relative flex flex-col rounded-md border border-rule bg-surface p-5 transition-colors hover:border-ink focus-within:border-ink focus-within:ring-2 focus-within:ring-ink/20">
+      <div className="flex items-baseline justify-between gap-3 text-sm">
+        <span className="font-semibold text-ink">{article.category}</span>
+        <time dateTime={article.createdAt} className="text-text-muted">
+          {formatDate(article.createdAt)}
+        </time>
       </div>
-      <h3 className="text-base font-semibold text-secondary mb-2">
-        {article.title}
+      <h3 className="mt-3 text-xl font-bold leading-snug">
+        <Link href={`/articles/${article.id}`} className="after:absolute after:inset-0 focus-visible:outline-none">
+          <span className="marker-hover">{article.title}</span>
+        </Link>
       </h3>
-      <p className="text-sm text-text-muted mb-4 line-clamp-4">
-        {article.excerpt}
-      </p>
-      <Link
-        href={`/articles/${article.id}`}
-        className="inline-flex items-center text-sm font-medium text-primary hover:text-primary-dark transition-colors"
-      >
-        Переглянути →
-      </Link>
-    </div>
+      <p className="mt-2 line-clamp-3 leading-relaxed text-text-muted">{article.excerpt}</p>
+    </article>
   );
 }

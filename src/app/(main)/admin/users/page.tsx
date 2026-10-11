@@ -94,8 +94,8 @@ export default function AdminUsersPage() {
 
       setActionSuccess("Роль користувача успішно оновлено");
       mutate();
-    } catch (err: any) {
-      setActionError(err.message || "Помилка при оновленні ролі");
+    } catch (err) {
+      setActionError(err instanceof Error && err.message ? err.message : "Помилка при оновленні ролі");
     }
   };
 
@@ -125,8 +125,8 @@ export default function AdminUsersPage() {
 
       setActionSuccess("Користувача успішно видалено");
       mutate();
-    } catch (err: any) {
-      setActionError(err.message || "Помилка при видаленні користувача");
+    } catch (err) {
+      setActionError(err instanceof Error && err.message ? err.message : "Помилка при видаленні користувача");
     }
   };
 

@@ -97,8 +97,8 @@ export default function AdminArticlesPage() {
 
       setActionSuccess("Статтю успішно видалено");
       mutate();
-    } catch (err: any) {
-      setActionError(err.message || "Помилка при видаленні статті");
+    } catch (err) {
+      setActionError(err instanceof Error && err.message ? err.message : "Помилка при видаленні статті");
     }
   };
 

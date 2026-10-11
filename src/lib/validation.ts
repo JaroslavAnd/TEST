@@ -24,8 +24,16 @@ export function validateArticle(data: {
     return { valid: false, error: "Зміст матеріалу є обов'язковим" };
   }
 
+  if (data.content.length > 20000) {
+    return { valid: false, error: "Зміст не може перевищувати 20 000 символів" };
+  }
+
   if (!data.category || data.category.trim() === "") {
     return { valid: false, error: "Категорія є обов'язковою" };
+  }
+
+  if (data.excerpt !== undefined && data.excerpt.length > 300) {
+    return { valid: false, error: "Короткий опис не може перевищувати 300 символів" };
   }
 
   return { valid: true };
