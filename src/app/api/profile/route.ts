@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-
+import { validateProfile } from "@/lib/validation";
 // GET /api/profile — отримати профіль поточного користувача
 export async function GET() {
   const session = await auth();
@@ -50,7 +50,14 @@ export async function PATCH(request: Request) {
   try {
     const body = await request.json();
     const { name, age, bio } = body;
-
+    const validation = validateProfile({
+        name: name === undefined ? undefined : String(name),
+        age: age === undefined || age === null ? age : Number(age),
+        bio: bio === undefined || bio === null ? undefined : String(bio),
+      });
+      if (!validation.valid) {
+        return Response.json({ error: validation.error }, { status: 400 });
+      }
     const user = await prisma.user.update({
       where: { id: session.user.id },
       data: {

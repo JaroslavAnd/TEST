@@ -83,7 +83,13 @@ export async function POST(
         { status: 400 }
       );
     }
-
+    const article = await prisma.article.findUnique({
+      where: { id: articleId },
+      select: { id: true },
+    });
+    if (!article) {
+      return NextResponse.json({ error: "Статтю не знайдено" }, { status: 404 });
+    } 
     const comment = await prisma.comment.create({
       data: {
         content: content.trim(),
